@@ -1,46 +1,32 @@
 export default {
   async fetch(request) {
-    const destino = "https://script.google.com/macros/s/AKfycbxghvot-BAWzvktlJZGM7qg55ns0Zmm-q-Iv40EE4rXWUoQ3Wsae65o9voePxlkTPlY4g/exec"; // Tu URL real
+    const urlDestino = "https://script.google.com/macros/s/AKfycbxghvot-BAWzvkt1JzGM7Qg55nS0zmm-q-Iv40EE4rXuUO9hWsae65o9voePx1k1PYIY4g/exec";
 
-    // Manejar preflight OPTIONS (CORS)
-    if (request.method === "OPTIONS") {
-      return new Response(null, {
-        status: 204,
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "POST, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type",
-        },
-      });
-    }
-
-    // Manejar solicitud POST
     if (request.method === "POST") {
-      const body = await request.text();
+      const cuerpo = await request.text();
+      const json = JSON.parse(cuerpo);
 
-      const response = await fetch(destino, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: body,
-      });
-
-      const result = await response.text();
-
-      return new Response(result, {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-        },
-      });
+      // Asegurarse que el tipo sea "nuevo_tour"
+      if (json.tipo === "nuevo_tour") {
+        return fetch(urlDestino, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(json)
+        });
+      } else {
+        return new Response(JSON.stringify({
+          success: false,
+          error: "Tipo de solicitud no permitido"
+        }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" }
+        });
+      }
     }
 
-    // Cualquier otro método
-    return new Response("Método no permitido", {
-      status: 405,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-      },
-    });
-  },
-};
+    return new Response("Método no permitido", { status: 405 });
+  }
+}
+
