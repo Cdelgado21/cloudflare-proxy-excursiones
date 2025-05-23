@@ -1,6 +1,6 @@
 export default {
   async fetch(request) {
-    const urlDestino = "https://script.google.com/macros/s/AKfycbxMH5xvWVaBkkQx5WSEjtdaTA5L0ecFmdocL_57sGMimAQzls9J5QSE4AafJ14JXEjJ0g/exec"; // tu URL correcta de Apps Script
+    const urlDestino = "https://script.google.com/macros/s/AKfycbxghvot-BAWzvktlJZGM7qg55ns0Zmm-q-Iv40EE4rXWUoQ3Wsae65o9voePxlkTPlY4g/exec"; // tu URL correcta de Apps Script
 
     // Permitir preflight (CORS)
     if (request.method === "OPTIONS") {
