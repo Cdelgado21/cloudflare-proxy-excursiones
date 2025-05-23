@@ -1,7 +1,8 @@
 export default {
   async fetch(request) {
-    const urlDestino = "https://script.google.com/macros/s/AKfycbxghvot-BAWzvkt1JzGM7Qg55nS0zmm-q-Iv40EE4rXuUO9hWsae65o9voePx1k1PYIY4g/exec";
+    const urlDestino = "https://script.google.com/macros/s/AKfycbxMH5xvWVaBkkQx5WSEjtdaTA5L0ecFmdocL_57sGMimAQzls9J5QSE4AafJ14JXEjJ0g/exec"; // tu URL correcta de Apps Script
 
+    // Permitir preflight (CORS)
     if (request.method === "OPTIONS") {
       return new Response(null, {
         status: 204,
@@ -13,10 +14,11 @@ export default {
       });
     }
 
+    // Procesar POST
     if (request.method === "POST") {
       try {
-        const cuerpo = await request.text();
-        const json = JSON.parse(cuerpo);
+        const body = await request.text();
+        const json = JSON.parse(body);
 
         const respuesta = await fetch(urlDestino, {
           method: "POST",
@@ -26,21 +28,39 @@ export default {
 
         const texto = await respuesta.text();
 
-        // Devolver la respuesta como texto crudo (sin JSON.parse)
-        return new Response(texto, {
-          status: 200,
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Content-Type": "application/json"
-          }
-        });
+        // Intentamos convertir a JSON la respuesta
+        try {
+          const data = JSON.parse(texto);
+          return new Response(JSON.stringify(data), {
+            status: 200,
+            headers: {
+              "Access-Control-Allow-Origin": "*",
+              "Content-Type": "application/json"
+            }
+          });
+        } catch (err) {
+          return new Response(JSON.stringify({
+            success: false,
+            error: "La respuesta del servidor no es JSON válido",
+            raw: texto
+          }), {
+            status: 500,
+            headers: {
+              "Access-Control-Allow-Origin": "*",
+              "Content-Type": "application/json"
+            }
+          });
+        }
 
       } catch (err) {
-        return new Response("❌ Error interno en el Worker: " + err.message, {
+        return new Response(JSON.stringify({
+          success: false,
+          error: err.message
+        }), {
           status: 500,
           headers: {
             "Access-Control-Allow-Origin": "*",
-            "Content-Type": "text/plain"
+            "Content-Type": "application/json"
           }
         });
       }
@@ -48,11 +68,7 @@ export default {
 
     return new Response("Método no permitido", {
       status: 405,
-      headers: {
-        "Access-Control-Allow-Origin": "*"
-      }
+      headers: { "Access-Control-Allow-Origin": "*" }
     });
   }
 }
-
-
